@@ -71,13 +71,13 @@
         
         
             
-                &#183; 1898 words
+                &#183; 1750 words
             
         
         
             
             
-                &#183; 10 min
+                &#183; 9 min
             
         
         <hr/>
@@ -131,7 +131,7 @@
 <p>However, I ended up doing something more similar to another application of BLE: beacons. Briefly, beacons allow mobile devices like phones to know they're at some location. This is done simply be encoding all the necessary information in the advertisement. No services are exposed by the BLE beacon. The two most common beacon protocols are iBeacon, by Apple, and Eddystone, by Google.</p>
 <p>I ended up choosing Eddystone since I found a lot better documentation on it and even some instructions to get a Raspberry Pi to emit a some given data. Eddystone is generally meant to encode some URI and allow nearby devices to open it. For example, it could be the website URL of whatever store a user is at. Instead of sending URI-encoded data, I could just send any bytes of my choosing.</p>
 <h2 id="interfacing-with-bluetooth">Interfacing with Bluetooth</h2>
-<p>There were a couple of ways I could interact with Bluetooth on the Raspberry Pi, namely <code>hcitool</code> and <code>bluetoothctl</code>. At this point in time, <code>hcitool</code> and its accompanying tools, like <code>hcidump</code> were deprecated and replaced with <code>bluetoothctl</code>. However, I ended up going with <code>hcitool</code> since there was significantly more documentation on the tool compared to the latter. Also, programmatically using <code>hcitool</code> seemed much easier since it had a few command line options that returned values rather than <code>bluetoothctl</code> which nearly offered a full terminal user interface. </p>
+<p>There were a couple of ways I could interact with Bluetooth on the Raspberry Pi, namely <code>hcitool</code> and <code>bluetoothctl</code>. At this point in time, <code>hcitool</code> and its accompanying tools, like <code>hcidump</code> were deprecated and replaced with <code>bluetoothctl</code>. However, I ended up going with <code>hcitool</code> since there was significantly more documentation on the tool compared to the latter. Also, programmatically using <code>hcitool</code> seemed much easier since it had a few command line options that returned values rather than <code>bluetoothctl</code> which nearly offered a full terminal user interface.</p>
 <p>Controlling the Bluetooth chip involved the <code>hcitool cmd</code> command and <code>hcitool lescan</code> command. The first of these had a few subcommands I used to set advertisiment frequency, advertisiment mode, and advertisiment data. The following command activated advertisiment and sets the device's mode to non-connectable. This means that no device can form a connection with this one. It may only receive broadcasted advertisements.</p>
 <pre data-lang="bash" style="background-color:#282828;color:#fdf4c1aa;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#fdf4c1;">hcitool cmd 0x08 0x000a 01
 </span></code></pre>
@@ -167,7 +167,7 @@
 </span><span>    }
 </span><span>}
 </span></code></pre>
-<p>On the advertisement thread the data is received and echoed to any nearby listening nodes. If this message has been received before it won't be sent again for a minute. This is so that new messages can make it through the network if they're already transmitting a different message. I didn't really have time to write a proper protocol since the one below has several problems. For one, if there is a &quot;choke point&quot; in the network, one message could get sent through while the other is supressed. Another issue is that the network has a very limited bandwidth. It can only send one message at a time. Originally, I wanted to allow messages to reside for a certain amount of time on the RPi and the advertisment thread would cycle through them. That way multiple messages could get through the network at the same time. Once again, I didn't have the time to modify the code below to make it more optimal.</p>
+<p>On the advertisement thread the data is received and echoed to any nearby listening nodes. If this message has been received before it won't be sent again for a minute. This is so that new messages can make it through the network if they're already transmitting a different message. I didn't really have time to write a proper protocol since the one below has several problems. For one, if there is a "choke point" in the network, one message could get sent through while the other is supressed. Another issue is that the network has a very limited bandwidth. It can only send one message at a time. Originally, I wanted to allow messages to reside for a certain amount of time on the RPi and the advertisment thread would cycle through them. That way multiple messages could get through the network at the same time. Once again, I didn't have the time to modify the code below to make it more optimal.</p>
 <pre data-lang="rust" style="background-color:#282828;color:#fdf4c1aa;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#fa5c4b;">fn </span><span style="color:#8ec07c;">periodic_advertisement_controller</span><span>(</span><span style="color:#fdf4c1;">rx</span><span>: Receiver&lt;[</span><span style="color:#fa5c4b;">u8</span><span>; </span><span style="color:#d3869b;">40</span><span>]&gt;) {
 </span><span>    </span><span style="color:#fa5c4b;">let mut</span><span> first_seen: HashMap&lt;[</span><span style="color:#fa5c4b;">u8</span><span>; </span><span style="color:#d3869b;">40</span><span>], time::Instant&gt; </span><span style="color:#fe8019;">= </span><span>HashMap::new(); </span><span style="font-style:italic;color:#928374;">// WARNING: UNBOUNDED SIZE HASHMAP
 </span><span>

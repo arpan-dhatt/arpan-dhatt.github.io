@@ -71,13 +71,13 @@
         
         
             
-                &#183; 1377 words
+                &#183; 1104 words
             
         
         
             
             
-                &#183; 7 min
+                &#183; 6 min
             
         
         <hr/>
@@ -151,7 +151,7 @@
 <p>The final step to getting this to work is simple, yet the reason why this approach doesn't work for our grading system. On Linux, we don't automatically get access to the <code>dlfcn.h</code> header. We need to link an additional library by passing the C compiler the <code>-ldl</code> flag. Only then can we use functions like <code>dlopen</code> and <code>dlsym</code>. This is simple enough on our end. We just need to add <code>-ldl</code> to the appropriate line our <code>Makefile</code>. Unfortunately, the grading script uses its own <code>Makefile</code> which won't link the needed library. But, what if I told you, there was another way...</p>
 <h2 id="first-try-part-2-the-unix-process-api">First Try (Part 2): The UNIX Process API</h2>
 <p>Ok, so if I couldn't dynamically load a Rust binary, could I just run it as an executable instead? To try this out I needed to make use of the <code>fork</code>, <code>execvp</code>, and <code>waitpid</code> UNIX functions. Only the <code>execvp</code> function is necessary if you wanted to code your assignment in a different language, but I needed to use all three for testing purposes. I won't explain in detail what all of these functions do, but if you want to learn more I recommend checking out <a href="https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-api.pdf" target="_blank">this interlude in <em>Operating Systems: Three Easy Pieces</em></a>.</p>
-<p>At this point in time, I had already completed the assignment so if I could use that to test whether or not what I was doing would cause an error or not. I haven't made a Rust port of the entire assignment so I couldn't exactly just use that to test. That would be quite a lot of work and I'm a pretty lazy person. That's where <code>fork</code> and <code>waitpid</code> came in. In short, I can use <code>fork</code> to create a child process that &quot;turns into&quot; the Rust program using <code>execvp</code>. In the parent process I could use <code>waitpid</code> and a provided macro to make sure everything proceeded as planned. If my code passed all the test cases in Gradescope, it means nothing errored out. If it failed, that meant the new code I added didn't work.</p>
+<p>At this point in time, I had already completed the assignment so if I could use that to test whether or not what I was doing would cause an error or not. I haven't made a Rust port of the entire assignment so I couldn't exactly just use that to test. That would be quite a lot of work and I'm a pretty lazy person. That's where <code>fork</code> and <code>waitpid</code> came in. In short, I can use <code>fork</code> to create a child process that "turns into" the Rust program using <code>execvp</code>. In the parent process I could use <code>waitpid</code> and a provided macro to make sure everything proceeded as planned. If my code passed all the test cases in Gradescope, it means nothing errored out. If it failed, that meant the new code I added didn't work.</p>
 <p>This time there's no Rust code to share since the code could be literally anything that can be compiled to an executable. The C code is slighlty more involved, however:</p>
 <pre data-lang="c" style="background-color:#282828;color:#fdf4c1aa;" class="language-c "><code class="language-c" data-lang="c"><span>
 </span><span style="color:#fa5c4b;">#include </span><span style="color:#b8bb26;">&quot;ci.h&quot;
